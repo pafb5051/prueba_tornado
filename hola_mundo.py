@@ -1,5 +1,5 @@
 from tornado.ioloop import IOLoop
-from tornado.web import RequestHandler, Application, url, asynchronous
+from tornado.web import RequestHandler, Application, url, asynchronous, gen
 from tornado.escape import xhtml_escape
 import motor
 
@@ -38,14 +38,16 @@ class Login(RequestHandler):
                    'Constrasena: <input type="text" name="Contrasena"><BR>'
                    '<input type="submit" value="Sign in">'
                    '</form></body></html>')
+  @gen.coroutine
   def post(self):
     #aqui va la autentificacion
     usuario = self.get_argument('Usuario')
     contrasena = self.get_argument('Contrasena')
-    
-    resultado = yield self.settings['db'].usuarios.find_one({'usuario': usuario, 'contrasena':contrasena}).count()
-    if resultado== 1 : 
-      self.write("usuario encontrado")
+    resultado = yield self.settings['db'].usuarios.find_one({'usuario': usuario, 'contrasena': contrasena})
+    if resultado:
+     self.write("usuario encontrado")
+    else:
+     self.redirect('/login')
     
 
 application = Application([
